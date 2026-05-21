@@ -7,7 +7,7 @@ import DayDetail from "@/components/DayDetail";
 import TabBar from "@/components/TabBar";
 import type { DiaryEntry } from "@/lib/types";
 
-const USER_ID = "your-hardcoded-user-id";
+const USER_ID = "ff537d73-4858-4130-aa74-e19fbb575cee";
 
 export default function CalendarPage() {
   const now = new Date();

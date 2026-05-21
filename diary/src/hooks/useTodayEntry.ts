@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DiaryEntry, RawNote, Generation } from "@/lib/types";
 
-const USER_ID = "your-hardcoded-user-id";
+const USER_ID = "ff537d73-4858-4130-aa74-e19fbb575cee";
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);

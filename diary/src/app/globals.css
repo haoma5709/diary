@@ -5,3 +5,14 @@
 html, body {
   overscroll-behavior: none;
 }
+
+.fixed-slot {
+  flex-shrink: 0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}

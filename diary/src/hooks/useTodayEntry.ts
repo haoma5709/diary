@@ -15,7 +15,7 @@ function nowTime(): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-export function useTodayEntry() {
+export function useTodayEntry(enabled: boolean = false) {
   const [entry, setEntry] = useState<DiaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,8 +34,8 @@ export function useTodayEntry() {
   }, []);
 
   useEffect(() => {
-    fetchToday();
-  }, [fetchToday]);
+    if (enabled) fetchToday();
+  }, [fetchToday, enabled]);
 
   const addNote = useCallback(async (text: string) => {
     const note: RawNote = { time: nowTime(), text };

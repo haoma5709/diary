@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import CalendarView from "@/components/CalendarView";
 import DayDetail from "@/components/DayDetail";
 import TabBar from "@/components/TabBar";
@@ -10,6 +11,7 @@ import type { DiaryEntry } from "@/lib/types";
 const USER_ID = "ff537d73-4858-4130-aa74-e19fbb575cee";
 
 export default function CalendarPage() {
+  const { ready } = useAuth();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -35,7 +37,7 @@ export default function CalendarPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchMonthEntries(year, month); }, [year, month]);
+  useEffect(() => { if (ready) fetchMonthEntries(year, month); }, [year, month, ready]);
 
   const handleDayClick = async (dateStr: string) => {
     const cached = entries.find((e) => e.date === dateStr);

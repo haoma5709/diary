@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import { useTodayEntry } from "@/hooks/useTodayEntry";
 import Timeline from "@/components/Timeline";
 import InputBar from "@/components/InputBar";
@@ -9,7 +10,8 @@ import DiaryViewer from "@/components/DiaryViewer";
 import TabBar from "@/components/TabBar";
 
 export default function HomePage() {
-  const { entry, loading, addNote, removeNote, addGeneration, switchVersion } = useTodayEntry();
+  const { ready } = useAuth();
+  const { entry, loading, addNote, removeNote, addGeneration, switchVersion } = useTodayEntry(ready);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

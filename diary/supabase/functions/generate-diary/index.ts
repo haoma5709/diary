@@ -7,16 +7,29 @@ interface RawNote {
   text: string;
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return new Response(JSON.stringify({ error: "Unauthorized", code: "UNAUTHORIZED" }), {
       status: 401,
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 
@@ -26,7 +39,7 @@ Deno.serve(async (req: Request) => {
     if (!rawNotes?.length) {
       return new Response(JSON.stringify({ error: "没有提供日记内容", code: "EMPTY_INPUT" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
@@ -66,7 +79,7 @@ Deno.serve(async (req: Request) => {
         code: "API_ERROR",
       }), {
         status: 502,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
@@ -80,7 +93,7 @@ Deno.serve(async (req: Request) => {
         code: "PARSE_ERROR",
       }), {
         status: 502,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
@@ -90,7 +103,7 @@ Deno.serve(async (req: Request) => {
       content: result.content ?? aiMessage,
       summary: result.summary ?? "",
     }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
 
   } catch (err) {
@@ -99,7 +112,7 @@ Deno.serve(async (req: Request) => {
       code: "INTERNAL_ERROR",
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 });

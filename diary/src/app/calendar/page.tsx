@@ -12,12 +12,17 @@ const USER_ID = "ff537d73-4858-4130-aa74-e19fbb575cee";
 
 export default function CalendarPage() {
   const { ready } = useAuth();
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth());
+  const [year, setYear] = useState<number | null>(null);
+  const [month, setMonth] = useState<number | null>(null);
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const now = new Date();
+    setYear(now.getFullYear());
+    setMonth(now.getMonth());
+  }, []);
 
   const fetchMonthEntries = async (y: number, m: number) => {
     setLoading(true);
@@ -37,7 +42,7 @@ export default function CalendarPage() {
     setLoading(false);
   };
 
-  useEffect(() => { if (ready) fetchMonthEntries(year, month); }, [year, month, ready]);
+  useEffect(() => { if (ready && year !== null && month !== null) fetchMonthEntries(year, month); }, [year, month, ready]);
 
   const handleDayClick = async (dateStr: string) => {
     const cached = entries.find((e) => e.date === dateStr);
@@ -54,11 +59,13 @@ export default function CalendarPage() {
   };
 
   const prevMonth = () => {
+    if (month === null || year === null) return;
     if (month === 0) { setYear(year - 1); setMonth(11); }
     else { setMonth(month - 1); }
   };
 
   const nextMonth = () => {
+    if (month === null || year === null) return;
     if (month === 11) { setYear(year + 1); setMonth(0); }
     else { setMonth(month + 1); }
   };
@@ -72,21 +79,26 @@ export default function CalendarPage() {
     );
   }
 
+  if (year === null || month === null || loading) {
+    return (
+      <div className="page-container">
+        <div className="flex-1 flex items-center justify-center h-40 text-sm text-gray-300">加载中...</div>
+        <TabBar active="calendar" />
+      </div>
+    );
+  }
+
   return (
     <div className="page-container flex flex-col h-dvh">
       <div className="flex-1 overflow-y-auto">
-        {loading ? (
-          <div className="flex items-center justify-center h-40 text-sm text-gray-300">加载中...</div>
-        ) : (
-          <CalendarView
-            entries={entries}
-            year={year}
-            month={month}
-            onDayClick={handleDayClick}
-            onPrevMonth={prevMonth}
-            onNextMonth={nextMonth}
-          />
-        )}
+        <CalendarView
+          entries={entries}
+          year={year}
+          month={month}
+          onDayClick={handleDayClick}
+          onPrevMonth={prevMonth}
+          onNextMonth={nextMonth}
+        />
       </div>
       <TabBar active="calendar" />
     </div>

@@ -59,7 +59,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="page-container flex items-center justify-center">
-        <div className="text-gray-300 text-sm">加载中...</div>
+        <div className="text-ink-muted text-sm">加载中...</div>
       </div>
     );
   }

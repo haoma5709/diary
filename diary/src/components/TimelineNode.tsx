@@ -34,13 +34,13 @@ export default function TimelineNode({ time, text, onDelete }: Props) {
   };
 
   return (
-    <div className="relative overflow-hidden px-4 py-3 border-b border-gray-50" onTouchStart={handleTouchStart}>
-      <div className="absolute right-4 top-0 bottom-0 flex items-center text-white text-sm opacity-0">
+    <div className="relative overflow-hidden px-5 py-3.5 border-b border-linen transition-colors" onTouchStart={handleTouchStart}>
+      <div className="absolute right-5 top-0 bottom-0 flex items-center text-white text-sm opacity-0">
         <span>删除</span>
       </div>
-      <div className="flex gap-3">
-        <span className="text-sm text-gray-400 font-mono pt-0.5 shrink-0">{time}</span>
-        <p className="text-sm text-gray-700 flex-1">{text}</p>
+      <div className="flex gap-3.5">
+        <span className="text-xs text-ink-muted font-mono pt-0.5 shrink-0">{time}</span>
+        <p className="text-sm text-ink/90 flex-1 leading-relaxed">{text}</p>
       </div>
     </div>
   );

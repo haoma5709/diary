@@ -72,7 +72,7 @@ export default function CalendarPage() {
 
   if (selectedEntry) {
     return (
-      <div className="page-container flex flex-col h-dvh">
+      <div className="page-container">
         <DayDetail entry={selectedEntry} onBack={() => setSelectedEntry(null)} />
         <TabBar active="calendar" />
       </div>
@@ -82,14 +82,14 @@ export default function CalendarPage() {
   if (year === null || month === null || loading) {
     return (
       <div className="page-container">
-        <div className="flex-1 flex items-center justify-center h-40 text-sm text-gray-300">加载中...</div>
+        <div className="flex-1 flex items-center justify-center h-40 text-sm text-ink-muted">加载中...</div>
         <TabBar active="calendar" />
       </div>
     );
   }
 
   return (
-    <div className="page-container flex flex-col h-dvh">
+    <div className="page-container">
       <div className="flex-1 overflow-y-auto">
         <CalendarView
           entries={entries}

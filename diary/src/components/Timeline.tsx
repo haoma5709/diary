@@ -11,9 +11,9 @@ interface Props {
 export default function Timeline({ notes, onDelete }: Props) {
   if (notes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-gray-300 text-sm">
-        <p>还没有记录</p>
-        <p className="mt-1">在下方输入框说出今天的想法</p>
+      <div className="flex flex-col items-center justify-center h-full text-ink-muted text-sm gap-1">
+        <p className="text-2xl opacity-30">—</p>
+        <p>说点什么，开始记录今天</p>
       </div>
     );
   }

@@ -30,16 +30,16 @@ export default function CalendarView({ entries, year, month, onDayClick, onPrevM
   const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="px-2">
-      <div className="flex items-center justify-between px-2 py-3">
-        <button onClick={onPrevMonth} className="text-sm text-gray-400 px-2">&lt;</button>
-        <span className="text-base font-medium">{year}年{month + 1}月</span>
-        <button onClick={onNextMonth} className="text-sm text-gray-400 px-2">&gt;</button>
+    <div className="px-3">
+      <div className="flex items-center justify-between px-2 py-4">
+        <button onClick={onPrevMonth} className="text-sm text-ink-muted px-3 py-1 hover:text-ink transition-colors">&lt;</button>
+        <span className="text-base font-semibold font-sans text-ink">{year}年{month + 1}月</span>
+        <button onClick={onNextMonth} className="text-sm text-ink-muted px-3 py-1 hover:text-ink transition-colors">&gt;</button>
       </div>
 
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="text-center text-xs text-gray-400 py-2">{d}</div>
+          <div key={d} className="text-center text-xs text-ink-muted py-2 font-medium">{d}</div>
         ))}
       </div>
 
@@ -54,12 +54,13 @@ export default function CalendarView({ entries, year, month, onDayClick, onPrevM
             <button
               key={dateStr}
               onClick={() => onDayClick(dateStr)}
-              className={`aspect-square flex flex-col items-center justify-center rounded-full text-sm
-                ${isToday ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-50"}`}
+              className={`aspect-square flex flex-col items-center justify-center rounded-full text-sm relative
+                transition-all duration-150
+                ${isToday ? "bg-rust text-white font-semibold" : "text-ink hover:bg-linen"}`}
             >
               {day}
               {hasDiary && (
-                <div className={`w-1 h-1 rounded-full mt-0.5 ${isToday ? "bg-white" : "bg-blue-400"}`} />
+                <div className={`w-1 h-1 rounded-full mt-0.5 ${isToday ? "bg-white" : "bg-rust"}`} />
               )}
             </button>
           );

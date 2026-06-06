@@ -23,25 +23,25 @@ export default function InputBar({ onSave }: Props) {
   };
 
   return (
-    <div className="fixed-slot bg-white border-t border-b border-gray-100">
-      <div className="px-4 py-3">
+    <div className="fixed-slot bg-surface border-t border-linen border-b">
+      <div className="px-5 py-3">
         <textarea
-          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base
-                     resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400
-                     placeholder-gray-400"
+          className="w-full border border-linen rounded-2xl px-4 py-3 text-base
+                     resize-none focus:outline-none focus:border-rust focus:ring-[3px] focus:ring-rust/10
+                     placeholder:text-ink-muted bg-paper text-ink font-sans leading-relaxed"
           rows={2}
-          placeholder="点这里，用键盘语音输入..."
+          placeholder="说点什么"
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
         <button
           onClick={handleSave}
           disabled={!text.trim() || saving}
-          className="mt-2 w-full bg-blue-500 text-white rounded-xl py-2.5
-                     font-medium disabled:opacity-40 disabled:cursor-not-allowed
-                     active:bg-blue-600 transition-colors"
+          className="mt-2 w-full bg-rust text-white rounded-2xl py-3
+                     font-semibold disabled:opacity-35 disabled:cursor-not-allowed
+                     active:bg-rust-hover active:scale-[0.98] transition-all duration-150 text-sm tracking-wide"
         >
-          {saving ? "保存中..." : "保存片段"}
+          {saving ? "保存中..." : "说完了"}
         </button>
       </div>
     </div>

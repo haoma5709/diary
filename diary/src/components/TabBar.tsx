@@ -8,19 +8,19 @@ interface Props {
 
 export default function TabBar({ active }: Props) {
   return (
-    <nav className="fixed-slot flex border-t border-gray-100 bg-white">
+    <nav className="fixed-slot flex border-t border-linen bg-surface pb-[env(safe-area-inset-bottom,8px)]">
       <Link
         href="/"
-        className={`flex-1 py-3 text-center text-sm ${
-          active === "timeline" ? "text-blue-500 font-medium" : "text-gray-400"
+        className={`flex-1 py-3 text-center text-sm font-medium transition-colors duration-150 ${
+          active === "timeline" ? "text-rust font-semibold" : "text-ink-muted"
         }`}
       >
-        时间线
+        今天
       </Link>
       <Link
         href="/calendar"
-        className={`flex-1 py-3 text-center text-sm ${
-          active === "calendar" ? "text-blue-500 font-medium" : "text-gray-400"
+        className={`flex-1 py-3 text-center text-sm font-medium transition-colors duration-150 ${
+          active === "calendar" ? "text-rust font-semibold" : "text-ink-muted"
         }`}
       >
         日历

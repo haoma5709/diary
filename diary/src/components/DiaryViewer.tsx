@@ -22,10 +22,10 @@ export default function DiaryViewer({
   const [showVersions, setShowVersions] = useState(false);
 
   return (
-    <div className="fixed-slot bg-white border-t border-gray-200">
-      <div className="px-4 py-3">
+    <div className="fixed-slot bg-surface border-t border-linen">
+      <div className="px-5 py-4">
         {error && (
-          <div className="mb-3 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+          <div className="mb-4 bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
             <p className="text-sm text-red-600">{error}</p>
             <button onClick={onRetry} className="mt-2 text-sm text-red-500 underline">重试</button>
           </div>
@@ -33,35 +33,35 @@ export default function DiaryViewer({
 
         {generating ? (
           <div className="space-y-3 animate-pulse">
-            <div className="h-3 bg-gray-200 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 rounded w-full" />
-            <div className="h-3 bg-gray-200 rounded w-2/3" />
+            <div className="h-3 bg-linen rounded w-3/4" />
+            <div className="h-3 bg-linen rounded w-full" />
+            <div className="h-3 bg-linen rounded w-2/3" />
           </div>
         ) : generation ? (
-          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+          <div className="text-sm text-ink/90 leading-[1.85] whitespace-pre-wrap font-serif">
             {generation.content}
           </div>
         ) : (
-          <div className="text-sm text-gray-300 text-center py-4">
+          <div className="text-sm text-ink-muted/60 text-center py-6 font-sans">
             点击下方生成今天的第一篇日记
           </div>
         )}
 
-        <div className="flex gap-2 mt-3">
+        <div className="flex gap-2.5 mt-4">
           <button
             onClick={onGenerate}
             disabled={generating}
-            className="flex-1 bg-blue-500 text-white rounded-xl py-2.5 font-medium
-                       disabled:opacity-40 disabled:cursor-not-allowed
-                       active:bg-blue-600 transition-colors text-sm"
+            className="flex-1 bg-rust text-white rounded-2xl py-3 font-semibold
+                       disabled:opacity-35 disabled:cursor-not-allowed
+                       active:bg-rust-hover active:scale-[0.98] transition-all duration-150 text-sm tracking-wide"
           >
             {generating ? "生成中..." : "生成日记"}
           </button>
           {allGenerations.length > 0 && (
             <button
               onClick={() => setShowVersions(true)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-500
-                         active:bg-gray-50 transition-colors"
+              className="px-4 py-3 border border-linen rounded-2xl text-sm text-ink-light
+                         active:bg-linen transition-colors font-medium"
             >
               查看版本
             </button>

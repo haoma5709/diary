@@ -1,8 +1,33 @@
 "use client";
 
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import type { Generation } from "@/lib/types";
 import VersionPicker from "./VersionPicker";
+
+const mdComponents = {
+  h2: ({ children, ...props }: React.ComponentPropsWithoutRef<'h2'>) => (
+    <h2 className="text-base font-semibold text-ink font-sans mt-4 mb-2 first:mt-0" {...props}>{children}</h2>
+  ),
+  h3: ({ children, ...props }: React.ComponentPropsWithoutRef<'h3'>) => (
+    <h3 className="text-sm font-semibold text-rust font-sans mt-3 mb-1.5 first:mt-0" {...props}>{children}</h3>
+  ),
+  p: ({ children, ...props }: React.ComponentPropsWithoutRef<'p'>) => (
+    <p className="mb-2 leading-[1.85]" {...props}>{children}</p>
+  ),
+  ol: ({ children, ...props }: React.ComponentPropsWithoutRef<'ol'>) => (
+    <ol className="list-decimal ml-5 mb-2 space-y-1" {...props}>{children}</ol>
+  ),
+  ul: ({ children, ...props }: React.ComponentPropsWithoutRef<'ul'>) => (
+    <ul className="list-disc ml-5 mb-2 space-y-1" {...props}>{children}</ul>
+  ),
+  li: ({ children, ...props }: React.ComponentPropsWithoutRef<'li'>) => (
+    <li className="leading-[1.85]" {...props}>{children}</li>
+  ),
+  strong: ({ children, ...props }: React.ComponentPropsWithoutRef<'strong'>) => (
+    <strong className="font-semibold" {...props}>{children}</strong>
+  ),
+};
 
 interface Props {
   generation: Generation | null;
@@ -38,8 +63,10 @@ export default function DiaryViewer({
             <div className="h-3 bg-linen rounded w-2/3" />
           </div>
         ) : generation ? (
-          <div className="text-sm text-ink/90 leading-[1.85] whitespace-pre-wrap font-serif overflow-y-auto max-h-[35vh]">
-            {generation.content}
+          <div className="text-sm text-ink/90 font-serif overflow-y-auto max-h-[35vh]">
+            <ReactMarkdown components={mdComponents}>
+              {generation.content}
+            </ReactMarkdown>
           </div>
         ) : (
           <div className="text-sm text-ink-muted/60 text-center py-6 font-sans">

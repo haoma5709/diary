@@ -1,13 +1,19 @@
 "use client";
 
+import { useState } from "react";
+
 interface Props {
   time: string;
   text: string;
   onDelete: () => void;
+  isFirst?: boolean;
 }
 
-export default function TimelineNode({ time, text, onDelete }: Props) {
+export default function TimelineNode({ time, text, onDelete, isFirst }: Props) {
+  const [dismissed, setDismissed] = useState(false);
+
   const handleTouchStart = (e: React.TouchEvent) => {
+    setDismissed(true);
     const startX = e.touches[0].clientX;
     const el = e.currentTarget as HTMLElement;
 
@@ -34,13 +40,25 @@ export default function TimelineNode({ time, text, onDelete }: Props) {
   };
 
   return (
-    <div className="relative overflow-hidden px-5 py-3.5 border-b border-linen transition-colors" onTouchStart={handleTouchStart}>
-      <div className="absolute right-5 top-0 bottom-0 flex items-center text-white text-sm opacity-0">
-        <span>删除</span>
-      </div>
-      <div className="flex gap-3.5">
-        <span className="text-xs text-ink-muted font-mono pt-0.5 shrink-0">{time}</span>
-        <p className="text-sm text-ink/90 flex-1 leading-relaxed">{text}</p>
+    <div className="relative overflow-hidden">
+      <div
+        className="flex gap-4 px-[28px] py-3 transition-colors relative z-[1]"
+        onTouchStart={handleTouchStart}
+      >
+        <span className="text-[0.7rem] text-ink-muted font-mono pt-0.5 shrink-0 text-right min-w-[40px]">
+          {time}
+        </span>
+        <div className="flex flex-col items-center w-2 shrink-0 relative z-[1]">
+          <div className="w-2 h-2 rounded-full bg-rust shrink-0 mt-0.5" />
+        </div>
+        <p className="text-[0.88rem] text-ink/90 leading-relaxed flex-1 pb-2 font-serif">
+          {text}
+        </p>
+        {isFirst && !dismissed && (
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[0.65rem] text-ink-muted/50 pointer-events-none">
+            ← 左滑删除
+          </span>
+        )}
       </div>
     </div>
   );

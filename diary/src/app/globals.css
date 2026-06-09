@@ -4,8 +4,6 @@
 
 html, body {
   overscroll-behavior: none;
-  background: theme('colors.paper');
-  color: theme('colors.ink.DEFAULT');
 }
 
 .fixed-slot {
@@ -17,5 +15,4 @@ html, body {
   flex-direction: column;
   height: 100dvh;
   overflow: hidden;
-  background: theme('colors.paper');
 }

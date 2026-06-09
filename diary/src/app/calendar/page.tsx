@@ -73,7 +73,9 @@ export default function CalendarPage() {
   if (selectedEntry) {
     return (
       <div className="page-container">
-        <DayDetail entry={selectedEntry} onBack={() => setSelectedEntry(null)} />
+        <div className="flex-1 overflow-hidden">
+          <DayDetail entry={selectedEntry} onBack={() => setSelectedEntry(null)} />
+        </div>
         <TabBar active="calendar" />
       </div>
     );

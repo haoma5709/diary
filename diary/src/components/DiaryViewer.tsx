@@ -38,7 +38,7 @@ export default function DiaryViewer({
             <div className="h-3 bg-linen rounded w-2/3" />
           </div>
         ) : generation ? (
-          <div className="text-sm text-ink/90 leading-[1.85] whitespace-pre-wrap font-serif">
+          <div className="text-sm text-ink/90 leading-[1.85] whitespace-pre-wrap font-serif overflow-y-auto max-h-[35vh]">
             {generation.content}
           </div>
         ) : (

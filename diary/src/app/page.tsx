@@ -138,39 +138,47 @@ export default function RecordsPage() {
         />
       </div>
 
-      {/* Input — WeChat-style auto-expanding textarea */}
-      <div className="fixed-slot bg-surface border-t border-linen pt-2 pb-4 px-[28px]">
-        <div className="flex gap-3 items-end">
-          {showExpandBtn && (
+      {/* Input — minimalist unified baseline */}
+      <div className="fixed-slot bg-surface border-t border-linen pt-3 pb-4 px-[28px]">
+        <div className="relative">
+          <div className="flex gap-3 items-end">
+            {showExpandBtn && (
+              <button
+                onClick={() => setExpandMode(true)}
+                className="w-[40px] h-[40px] flex items-center justify-center text-ink-muted/40 text-base shrink-0 active:text-ink-muted transition-colors cursor-pointer bg-transparent border-0"
+                aria-label="全屏输入"
+              >
+                ⤢
+              </button>
+            )}
+            <textarea
+              ref={textareaRef}
+              className="flex-1 bg-transparent py-2 text-[0.9rem] text-ink font-sans leading-relaxed outline-none placeholder:text-ink-muted/50 resize-none border-0"
+              placeholder="说点什么"
+              rows={2}
+              value={text}
+              onChange={(e) => { setText(e.target.value); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+            />
             <button
-              onClick={() => setExpandMode(true)}
-              className="w-[44px] h-[44px] rounded-xl border border-linen flex items-center justify-center text-ink-muted text-lg shrink-0 active:bg-linen transition-colors cursor-pointer bg-transparent"
-              aria-label="全屏输入"
+              onClick={handleSave}
+              disabled={!text.trim() || saving}
+              className="w-[40px] h-[40px] rounded-full border-[1.5px] flex items-center justify-center text-base shrink-0 transition-all duration-200 active:scale-[0.92] disabled:opacity-20 cursor-pointer bg-transparent"
+              style={{
+                borderColor: text.trim() ? "#c46b4d" : "#d9cfbf",
+                color: text.trim() ? "#c46b4d" : "#b0a392",
+              }}
             >
-              ⤢
+              ↑
             </button>
-          )}
-          <textarea
-            ref={textareaRef}
-            className="flex-1 border-0 border-b border-linen bg-transparent py-2.5 text-[0.9rem] text-ink font-sans leading-relaxed outline-none transition-colors duration-200 focus:border-rust placeholder:text-ink-muted resize-none"
-            placeholder="说点什么"
-            rows={2}
-            value={text}
-            onChange={(e) => { setText(e.target.value); }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSave();
-              }
-            }}
-          />
-          <button
-            onClick={handleSave}
-            disabled={!text.trim() || saving}
-            className="w-[44px] h-[44px] rounded-full bg-rust border-0 text-white text-lg cursor-pointer flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.92] disabled:opacity-30"
-          >
-            {saving ? "···" : "↑"}
-          </button>
+          </div>
+          {/* Shared baseline */}
+          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-linen" />
         </div>
       </div>
 

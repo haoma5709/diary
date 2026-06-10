@@ -52,12 +52,10 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const notesText = rawNotes
-      .map((n) => `[${n.time}] ${n.text}`)
-      .join("\n");
+    const notesText = rawNotes.map((n) => `[${n.time}] ${n.text}`).join("\n");
 
-    // Call DeepSeek with streaming enabled
-    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+    // Step 1: Call DeepSeek with streaming, accumulate full response
+    const dsResponse = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,7 +73,7 @@ Deno.serve(async (req: Request) => {
       }),
     });
 
-    if (!response.ok) {
+    if (!dsResponse.ok) {
       return new Response(JSON.stringify({
         error: "AI 服务暂时不可用，请稍后重试",
         code: "API_ERROR",
@@ -85,46 +83,75 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Relay SSE stream to client
-    const stream = new ReadableStream({
-      async start(controller) {
-        const reader = response.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
+    // Step 2: Read entire DeepSeek stream and accumulate
+    const reader = dsResponse.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let fullText = "";
 
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") continue;
         try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+          const token = JSON.parse(data).choices?.[0]?.delta?.content;
+          if (token) fullText += token;
+        } catch { /* skip */ }
+      }
+    }
 
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop() || "";
+    // Step 3: Parse JSON from accumulated text
+    const jsonMatch = fullText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return new Response(JSON.stringify({
+        error: "AI 返回格式异常，请重试",
+        code: "PARSE_ERROR",
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
 
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const data = line.slice(6).trim();
-                if (data === "[DONE]") {
-                  controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-                  continue;
-                }
-                try {
-                  const parsed = JSON.parse(data);
-                  const token = parsed.choices?.[0]?.delta?.content;
-                  if (token) {
-                    controller.enqueue(
-                      new TextEncoder().encode(`data: ${JSON.stringify({ token })}\n\n`)
-                    );
-                  }
-                } catch {
-                  // skip unparseable chunks
-                }
-              }
-            }
-          }
-        } finally {
-          controller.close();
+    let content: string;
+    let summary: string;
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      content = parsed.content || fullText;
+      summary = parsed.summary || "";
+    } catch {
+      return new Response(JSON.stringify({
+        error: "AI 返回格式异常，请重试",
+        code: "PARSE_ERROR",
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Step 4: Stream clean content + summary to client
+    const stream = new ReadableStream({
+      start(controller) {
+        const encoder = new TextEncoder();
+        // Split content into small chunks for client-side animation
+        const chunkSize = 3;
+        for (let i = 0; i < content.length; i += chunkSize) {
+          const chunk = content.slice(i, i + chunkSize);
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ type: "chunk", text: chunk })}\n\n`)
+          );
         }
+        // Send summary as final event
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ type: "summary", text: summary })}\n\n`)
+        );
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
       },
     });
 

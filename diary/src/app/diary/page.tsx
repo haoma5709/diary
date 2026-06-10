@@ -56,76 +56,65 @@ export default function DiaryPage() {
         return;
       }
 
-      // Consume SSE stream — accumulate tokens, display with accelerating speed
+      // Consume SSE — server parsed JSON, sends clean content chunks + summary
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let rawText = "";
+      let contentAcc = "";
+      let summaryAcc = "";
+      let receiveDone = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6).trim();
-            if (data === "[DONE]") continue;
+      // Background: read all SSE events
+      const readPromise = (async () => {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) { receiveDone = true; break; }
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const raw = line.slice(6).trim();
+            if (raw === "[DONE]") { receiveDone = true; break; }
             try {
-              const { token } = JSON.parse(data);
-              rawText += token;
+              const msg = JSON.parse(raw);
+              if (msg.type === "chunk") contentAcc += msg.text;
+              else if (msg.type === "summary") summaryAcc = msg.text;
             } catch { /* skip */ }
           }
+          if (receiveDone) break;
         }
-      }
+      })();
 
-      // Helper: strip JSON wrapper to extract just the content value
-      const extractContent = (text: string): string => {
-        const key = '"content"';
-        const ki = text.indexOf(key);
-        if (ki === -1) return "";
-        const colon = text.indexOf(":", ki);
-        if (colon === -1) return "";
-        const open = text.indexOf('"', colon + 1);
-        if (open === -1) return "";
-        let c = text.slice(open + 1);
-        // Strip trailing JSON if present
-        const end = c.lastIndexOf('", "summary"');
-        if (end !== -1) c = c.slice(0, end);
-        else if (c.endsWith('"}')) c = c.slice(0, -2);
-        else if (c.endsWith('"')) c = c.slice(0, -1);
-        return c;
-      };
-
-      // Animate display: start slow, speed up
+      // Display: reveal accumulated content with accelerating speed
       let displayPos = 0;
-      const totalLen = rawText.length;
-
       await new Promise<void>((resolve) => {
         const tick = () => {
-          if (displayPos >= totalLen) { resolve(); return; }
-          const progress = displayPos / Math.max(totalLen, 1);
-          const speed = 40 - progress * 30;
-          const chunk = Math.max(1, Math.floor((totalLen - displayPos) / (speed * 2)));
-          displayPos = Math.min(totalLen, displayPos + chunk);
-          setStreamText(extractContent(rawText.slice(0, displayPos)));
+          const total = contentAcc.length;
+          // Resolve only when receive is done AND display caught up
+          if (displayPos >= total && receiveDone) { resolve(); return; }
+          if (total === 0) { setTimeout(tick, 30); return; }
+
+          const progress = displayPos / Math.max(total, 200);
+          const speed = Math.max(8, 40 - progress * 34); // 40→8ms
+          const step = Math.max(1, Math.floor((total - displayPos) / 15));
+          displayPos = Math.min(total, displayPos + step);
+          setStreamText(contentAcc.slice(0, displayPos));
           setTimeout(tick, speed);
         };
         tick();
       });
 
-      // Parse JSON from full response
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        setError("AI 返回格式异常，请重试");
+      // Ensure final content is displayed
+      setStreamText(contentAcc);
+
+      if (!contentAcc) {
+        setError("AI 返回内容为空，请重试");
         setGenerating(false);
         return;
       }
-      const { content, summary } = JSON.parse(jsonMatch[0]);
-      await addGeneration(content || rawText, summary || "");
+
+      await addGeneration(contentAcc, summaryAcc);
       setStreamText("");
     } catch {
       setError("网络错误，请稍后重试");

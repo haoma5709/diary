@@ -101,7 +101,7 @@ export default function DiaryPage() {
   if (loading) {
     return (
       <div className="page-container flex items-center justify-center">
-        <div className="text-ink-muted text-sm">加载中...</div>
+        <p className="text-ink-muted text-sm">加载中...</p>
         <TabBar active="diary" />
       </div>
     );
@@ -171,7 +171,7 @@ export default function DiaryPage() {
               onClick={() => { setEditing(true); setEditText(pinnedGen.content); }}
               className="inline-flex items-center gap-1 font-sans text-[0.75rem] text-ink-muted cursor-pointer py-1 mt-3 transition-colors hover:text-rust"
             >
-              ✏️ 编辑日记
+              编辑
             </button>
           </div>
         ) : entry && entry.raw_notes.length > 0 ? (
@@ -197,18 +197,18 @@ export default function DiaryPage() {
 
       {/* Actions */}
       {!editing && (
-        <div className="px-7 pt-5 pb-7 flex gap-6 flex-shrink-0">
+        <div className="px-7 pt-5 pb-7 flex flex-col gap-3 flex-shrink-0">
           <button
             onClick={handleGenerate}
             disabled={generating || !entry?.raw_notes.length}
-            className="text-[0.82rem] font-sans cursor-pointer transition-all duration-200 bg-transparent text-rust font-semibold border-0 border-b-[1.5px] border-rust py-2.5 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-full bg-rust text-white border-0 rounded-2xl py-3.5 text-[0.9rem] font-semibold font-sans tracking-wide cursor-pointer transition-all duration-200 active:bg-rust-hover active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
           >
-            {generating ? "生成中..." : "生成"}
+            {generating ? "生成中..." : "生成日记"}
           </button>
           {entry && entry.generations.length > 0 && (
             <button
               onClick={() => setShowVersions(true)}
-              className="text-[0.82rem] font-sans cursor-pointer transition-all duration-200 bg-transparent text-ink-muted border-0 border-b-[1.5px] border-transparent hover:text-ink-light hover:border-linen py-2.5"
+              className="w-full text-center text-[0.8rem] font-sans cursor-pointer transition-colors bg-transparent text-ink-muted border-0 py-1 hover:text-ink-light"
             >
               历史版本
             </button>

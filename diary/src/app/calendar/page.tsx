@@ -43,6 +43,27 @@ export default function CalendarPage() {
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const weekScrollRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef(0);
+
+  const handlePrev = () => {
+    if (view === "week") setCurrentMonday((d) => addDays(d, -7));
+    else setMonthYear((p) => p.m === 0 ? { y: p.y - 1, m: 11 } : { y: p.y, m: p.m - 1 });
+  };
+  const handleNext = () => {
+    if (view === "week") setCurrentMonday((d) => addDays(d, 7));
+    else setMonthYear((p) => p.m === 11 ? { y: p.y + 1, m: 0 } : { y: p.y, m: p.m + 1 });
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    if (Math.abs(dy) > 60) {
+      if (dy > 0) handlePrev();  // swipe down = previous
+      else handleNext();         // swipe up = next
+    }
+  };
 
   // Fetch a wide window (current month ± 1) so week/month views have data
   useEffect(() => {
@@ -116,11 +137,11 @@ export default function CalendarPage() {
   const today = formatDate(new Date());
 
   return (
-    <div className="page-container">
+    <div className="page-container" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Header with view toggle */}
       <div className="flex items-center justify-center pt-6 pb-2 px-7 relative flex-shrink-0">
         <button
-          onClick={view === "week" ? handlePrevWeek : () => setMonthYear((p) => p.m === 0 ? { y: p.y - 1, m: 11 } : { y: p.y, m: p.m - 1 })}
+          onClick={handlePrev}
           className="absolute left-7 text-[0.9rem] text-ink-muted py-1 px-2 cursor-pointer hover:text-ink transition-colors"
         >
           &lt;
@@ -140,7 +161,7 @@ export default function CalendarPage() {
           </button>
         </div>
         <button
-          onClick={view === "week" ? handleNextWeek : () => setMonthYear((p) => p.m === 11 ? { y: p.y + 1, m: 0 } : { y: p.y, m: p.m + 1 })}
+          onClick={handleNext}
           className="absolute right-7 text-[0.9rem] text-ink-muted py-1 px-2 cursor-pointer hover:text-ink transition-colors"
         >
           &gt;
@@ -148,16 +169,13 @@ export default function CalendarPage() {
       </div>
 
       {loading ? (
-        <div className="flex-1 flex items-center justify-center text-sm text-ink-muted">加载中...</div>
+        <div className="flex-1 flex items-center justify-center"><p className="text-ink-muted text-sm">加载中...</p></div>
       ) : view === "week" ? (
         <WeekView
           weekDays={weekDays}
           entryByDate={entryByDate}
           today={today}
           onDayClick={handleDayClick}
-          onPrev={handlePrevWeek}
-          onNext={handleNextWeek}
-          scrollRef={weekScrollRef}
         />
       ) : (
         <MonthView
@@ -176,15 +194,12 @@ export default function CalendarPage() {
 
 /* =========== WEEK VIEW =========== */
 function WeekView({
-  weekDays, entryByDate, today, onDayClick, onPrev, onNext, scrollRef,
+  weekDays, entryByDate, today, onDayClick,
 }: {
   weekDays: Date[];
   entryByDate: Map<string, DiaryEntry>;
   today: string;
   onDayClick: (dateStr: string) => void;
-  onPrev: () => void;
-  onNext: () => void;
-  scrollRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const startStr = formatDateCN(weekDays[0]).replace("月", "月");
   const endStr = formatDateCN(weekDays[6]);
@@ -193,7 +208,7 @@ function WeekView({
   return (
     <div className="flex-1 overflow-y-auto flex flex-col justify-center">
       <div className="px-7 py-8 flex flex-col justify-center flex-1">
-        <p className="text-[0.7rem] font-semibold text-ink-muted tracking-[0.06em] uppercase mb-4">
+        <p className="text-[0.85rem] font-semibold text-ink-muted tracking-[0.03em] mb-4">
           {weekLabel}
         </p>
         {weekDays.map((d) => {
@@ -241,6 +256,7 @@ function MonthView({
 
   return (
     <div className="flex-1 overflow-y-auto flex flex-col justify-center px-4 pb-5">
+      <p className="text-center text-[0.9rem] font-semibold text-ink mb-3">{year}年{month + 1}月</p>
       <div className="grid grid-cols-7 text-center text-[0.7rem] text-ink-muted font-medium py-1 pb-2">
         {MONTH_WEEKDAYS.map((d) => <span key={d}>{d}</span>)}
       </div>
@@ -258,16 +274,25 @@ function MonthView({
             <button
               key={ds}
               onClick={() => onDayClick(ds)}
-              className="aspect-square flex flex-col items-center justify-start p-0.5 cursor-pointer relative"
+              className="flex flex-col items-center justify-start p-0.5 cursor-pointer relative"
+              style={{ height: "calc((100vw - 32px) / 7 + 20px)", minHeight: "56px" }}
             >
               <span className={`w-[34px] h-[34px] flex items-center justify-center text-[0.82rem] rounded-full transition-colors ${isToday ? "bg-rust text-white font-semibold" : "text-ink"}`}>
                 {day}
               </span>
-              {summary && (
-                <span className="text-[0.6rem] text-ink-muted whitespace-nowrap overflow-hidden text-ellipsis w-full text-center mt-px leading-tight max-w-[44px]">
-                  {summary}
-                </span>
-              )}
+              <span
+                className="text-[0.58rem] text-ink-muted text-center mt-px w-full px-0.5"
+                style={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  wordBreak: "break-all",
+                  lineHeight: "1.25",
+                }}
+              >
+                {summary}
+              </span>
               {entry && (
                 <span className={`w-[4px] h-[4px] rounded-full absolute top-1 right-1.5 ${isToday ? "bg-white" : "bg-rust"}`} />
               )}
@@ -288,15 +313,24 @@ function DayDetailView({ entry, onBack }: { entry: DiaryEntry | null; onBack: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex items-center gap-3 px-7 py-4 border-b border-linen bg-surface flex-shrink-0">
-        <button onClick={onBack} className="text-sm text-rust font-medium cursor-pointer bg-transparent border-0">&lt; 返回日历</button>
+        <button onClick={onBack} className="text-sm text-rust font-medium cursor-pointer bg-transparent border-0">&lt; 返回</button>
         <span className="font-serif text-[1.1rem] font-semibold text-ink">{dateFull}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-7 py-5">
         {pinnedGen?.summary && (
           <>
-            <p className="text-[0.7rem] text-ink-muted tracking-[0.06em] mb-2">一句话摘要</p>
+            <p className="text-[0.7rem] text-ink-muted tracking-[0.06em] mb-2">摘要</p>
             <p className="font-serif text-[0.95rem] text-ink leading-[1.9] mb-5">{pinnedGen.summary}</p>
+          </>
+        )}
+
+        {pinnedGen?.content && (
+          <>
+            <p className="text-[0.7rem] text-ink-muted tracking-[0.06em] mb-2">日记</p>
+            <div className="font-serif text-[0.9rem] text-ink/90 leading-[1.85] whitespace-pre-wrap mb-5">
+              {pinnedGen.content}
+            </div>
           </>
         )}
 

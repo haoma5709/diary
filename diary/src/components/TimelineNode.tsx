@@ -1,19 +1,13 @@
 "use client";
 
-import { useState } from "react";
-
 interface Props {
   time: string;
   text: string;
   onDelete: () => void;
-  isFirst?: boolean;
 }
 
-export default function TimelineNode({ time, text, onDelete, isFirst }: Props) {
-  const [dismissed, setDismissed] = useState(false);
-
+export default function TimelineNode({ time, text, onDelete }: Props) {
   const handleTouchStart = (e: React.TouchEvent) => {
-    setDismissed(true);
     const startX = e.touches[0].clientX;
     const el = e.currentTarget as HTMLElement;
 
@@ -54,11 +48,6 @@ export default function TimelineNode({ time, text, onDelete, isFirst }: Props) {
         <p className="text-[0.88rem] text-ink/90 leading-relaxed flex-1 pb-2 font-serif">
           {text}
         </p>
-        {isFirst && !dismissed && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[0.65rem] text-ink-muted/50 pointer-events-none">
-            ← 左滑删除
-          </span>
-        )}
       </div>
     </div>
   );

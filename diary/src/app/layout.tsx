@@ -22,6 +22,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="theme-color" content="#fbf8f3" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`,
+          }}
+        />
+      </head>
       <body className="bg-paper text-ink antialiased font-sans">{children}</body>
     </html>
   );

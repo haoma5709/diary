@@ -53,7 +53,7 @@ export default function TimelineNode({ time, text, entering, onDelete }: Props) 
     <div
       className="relative overflow-hidden transition-all duration-300 ease-out"
       style={{
-        maxHeight: deleting ? "0px" : "80px",
+        maxHeight: deleting ? "0px" : "600px",
         marginBottom: deleting ? "0px" : undefined,
         opacity: entering && !flyIn ? 0 : deleting ? 0 : 1,
         transform: entering && !flyIn ? "translateY(40px)" : "translateY(0)",

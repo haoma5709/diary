@@ -5,10 +5,11 @@ import { useState, useRef, useCallback } from "react";
 interface Props {
   time: string;
   text: string;
+  entering?: boolean;
   onDelete: () => void;
 }
 
-export default function TimelineNode({ time, text, onDelete }: Props) {
+export default function TimelineNode({ time, text, entering, onDelete }: Props) {
   const [dragX, setDragX] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const startX = useRef(0);
@@ -60,7 +61,7 @@ export default function TimelineNode({ time, text, onDelete }: Props) {
 
       {/* Swipeable content */}
       <div
-        className="flex gap-4 px-[28px] py-3 relative z-[1] select-none"
+        className={`flex gap-4 px-[28px] py-3 relative z-[1] select-none ${entering ? "animate-note-enter" : ""}`}
         style={{
           transform: deleting ? "translateX(-120%)" : `translateX(${dragX}px)`,
           opacity: deleting ? 0 : 1,

@@ -8,14 +8,19 @@ export function useAuth() {
 
   useEffect(() => {
     const login = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        await supabase.auth.signInWithPassword({
-          email: "haoma5709@gmail.com",
-          password: "changhao040805",
-        });
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          await supabase.auth.signInWithPassword({
+            email: "haoma5709@gmail.com",
+            password: "changhao040805",
+          });
+        }
+      } catch (e) {
+        console.error("auth error:", e);
+      } finally {
+        setReady(true);
       }
-      setReady(true);
     };
     login();
   }, []);

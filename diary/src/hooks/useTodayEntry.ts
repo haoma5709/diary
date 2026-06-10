@@ -21,16 +21,21 @@ export function useTodayEntry(enabled: boolean = false) {
 
   const fetchToday = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("diary_entries")
-      .select("*")
-      .eq("user_id", USER_ID)
-      .eq("date", todayStr())
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from("diary_entries")
+        .select("*")
+        .eq("user_id", USER_ID)
+        .eq("date", todayStr())
+        .maybeSingle();
 
-    if (error) console.error("fetch error:", error);
-    setEntry(data as DiaryEntry | null);
-    setLoading(false);
+      if (error) console.error("fetch error:", error);
+      setEntry(data as DiaryEntry | null);
+    } catch (e) {
+      console.error("fetch exception:", e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {

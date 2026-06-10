@@ -1,27 +1,18 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 
 interface Props {
   time: string;
   text: string;
-  entering?: boolean;
   onDelete: () => void;
 }
 
-export default function TimelineNode({ time, text, entering, onDelete }: Props) {
+export default function TimelineNode({ time, text, onDelete }: Props) {
   const [dragX, setDragX] = useState(0);
   const [deleting, setDeleting] = useState(false);
-  const [flyIn, setFlyIn] = useState(entering ?? false);
   const startX = useRef(0);
   const currentX = useRef(0);
-
-  // Trigger fly-in on next frame
-  useEffect(() => {
-    if (entering) {
-      requestAnimationFrame(() => setFlyIn(true));
-    }
-  }, [entering]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (deleting) return;
@@ -55,12 +46,8 @@ export default function TimelineNode({ time, text, entering, onDelete }: Props) 
       style={{
         maxHeight: deleting ? "0px" : "600px",
         marginBottom: deleting ? "0px" : undefined,
-        opacity: entering && !flyIn ? 0 : deleting ? 0 : 1,
-        transform: entering && !flyIn ? "translateY(40px)" : "translateY(0)",
-        transition: entering && flyIn
-          ? "opacity 0.35s cubic-bezier(0.34,1.56,0.64,1), transform 0.35s cubic-bezier(0.34,1.56,0.64,1)"
-          : deleting ? "max-height 0.25s ease-in, opacity 0.25s ease-in, margin-bottom 0.25s ease-in"
-          : undefined,
+        opacity: deleting ? 0 : 1,
+        transition: deleting ? "max-height 0.25s ease-in, opacity 0.25s ease-in, margin-bottom 0.25s ease-in" : undefined,
       }}
     >
       {/* Red delete background */}

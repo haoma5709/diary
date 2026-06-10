@@ -20,8 +20,6 @@ export default function RecordsPage() {
   const [expandMode, setExpandMode] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const prevLen = useRef(0);
-  const [enteringIdx, setEnteringIdx] = useState<number | null>(null);
 
   const handleSave = async () => {
     const trimmed = text.trim();
@@ -37,17 +35,6 @@ export default function RecordsPage() {
       setSaving(false);
     }
   };
-
-  // Detect new note for fly-in animation
-  useEffect(() => {
-    const len = entry?.raw_notes.length ?? 0;
-    if (len > prevLen.current && prevLen.current >= 0) {
-      setEnteringIdx(len - 1);
-      const timer = setTimeout(() => setEnteringIdx(null), 400);
-      return () => clearTimeout(timer);
-    }
-    prevLen.current = len;
-  }, [entry?.raw_notes.length]);
 
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
@@ -140,7 +127,6 @@ export default function RecordsPage() {
                 key={`${note.time}-${i}`}
                 time={note.time}
                 text={note.text}
-                entering={i === enteringIdx}
                 onDelete={() => removeNote(i)}
               />
             ))}

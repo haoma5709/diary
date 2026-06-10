@@ -14,12 +14,12 @@ export default function TabBar({ active }: Props) {
   ] as const;
 
   return (
-    <nav className="fixed-slot flex border-t border-linen bg-surface pb-[env(safe-area-inset-bottom,8px)]">
+    <nav className="fixed-slot flex border-t border-linen bg-surface pt-3.5 pb-[calc(env(safe-area-inset-bottom,8px)+10px)]">
       {tabs.map((tab) => (
         <Link
           key={tab.key}
           href={tab.href}
-          className={`flex-1 py-3 text-center text-sm font-medium transition-colors duration-150 ${
+          className={`flex-1 py-3.5 text-center text-[0.82rem] font-medium transition-colors duration-150 ${
             active === tab.key ? "text-rust font-semibold" : "text-ink-muted"
           }`}
         >

@@ -86,8 +86,8 @@ export default function RecordsPage() {
         />
 
         {notes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-ink-muted/50 text-sm gap-1">
-            <p className="text-2xl opacity-20">—</p>
+          <div className="flex flex-col items-center justify-center h-full text-ink-muted/50 text-sm gap-4">
+            <img src="/icon-192.png" alt="语音日记" className="w-20 h-20 opacity-30 rounded-[22px]" />
             <p>所学，所思，所行，所想</p>
           </div>
         ) : (
@@ -155,7 +155,7 @@ export default function RecordsPage() {
               ref={textareaRef}
               className="flex-1 bg-transparent py-1 text-[0.9rem] text-ink font-sans leading-relaxed outline-none placeholder:text-ink-muted/50 resize-none border-0"
               placeholder="说点什么"
-              rows={2}
+              rows={1}
               value={text}
               onChange={(e) => { setText(e.target.value); }}
               onKeyDown={(e) => {

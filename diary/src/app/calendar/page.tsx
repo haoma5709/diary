@@ -47,6 +47,18 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const weekScrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
+  const touchCurrentY = useRef(0);
+  const [touchY, setTouchY] = useState(0);
+  const [swiping, setSwiping] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+  const prevView = useRef<"week" | "month">("week");
+
+  const switchView = (v: "week" | "month") => {
+    if (v === view) return;
+    prevView.current = view;
+    setView(v);
+    setAnimKey((k) => k + 1);
+  };
 
   const handlePrev = () => {
     if (view === "week") setCurrentMonday((d) => addDays(d, -7));
@@ -59,12 +71,33 @@ export default function CalendarPage() {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
+    touchCurrentY.current = 0;
+    setSwiping(true);
   };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const dy = e.changedTouches[0].clientY - touchStartY.current;
-    if (Math.abs(dy) > 60) {
-      if (dy > 0) handlePrev();  // swipe down = previous
-      else handleNext();         // swipe up = next
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!swiping) return;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    touchCurrentY.current = dy;
+    // Resist slightly beyond 100px
+    const resisted = Math.abs(dy) > 100
+      ? (dy > 0 ? 100 : -100) + (dy - (dy > 0 ? 100 : -100)) * 0.3
+      : dy;
+    setTouchY(resisted);
+  };
+  const handleTouchEnd = () => {
+    setSwiping(false);
+    const dy = touchCurrentY.current;
+    if (Math.abs(dy) > 80) {
+      // Commit swipe
+      setTouchY(dy > 0 ? 400 : -400);
+      setTimeout(() => {
+        if (dy > 0) handlePrev();
+        else handleNext();
+        setTouchY(0);
+      }, 200);
+    } else {
+      // Spring back
+      setTouchY(0);
     }
   };
 
@@ -147,7 +180,12 @@ export default function CalendarPage() {
   const today = formatDate(new Date());
 
   return (
-    <div className="page-container" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div
+      className="page-container"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Header with view toggle */}
       <div className="flex items-center justify-center pt-6 pb-2 px-7 relative flex-shrink-0">
         <button
@@ -158,13 +196,13 @@ export default function CalendarPage() {
         </button>
         <div className="flex gap-1 rounded-xl p-0.5">
           <button
-            onClick={() => setView("week")}
+            onClick={() => switchView("week")}
             className={`py-2 px-4 text-[0.8rem] font-sans cursor-pointer transition-all rounded-[10px] ${view === "week" ? "glass-surface text-rust font-semibold" : "bg-transparent text-ink-muted"}`}
           >
             周
           </button>
           <button
-            onClick={() => setView("month")}
+            onClick={() => switchView("month")}
             className={`py-2 px-4 text-[0.8rem] font-sans cursor-pointer transition-all rounded-[10px] ${view === "month" ? "glass-surface text-rust font-semibold" : "bg-transparent text-ink-muted"}`}
           >
             月
@@ -180,14 +218,23 @@ export default function CalendarPage() {
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center"><p className="text-ink-muted text-sm">加载中...</p></div>
-      ) : view === "week" ? (
-        <WeekView
-          weekDays={weekDays}
-          entryByDate={entryByDate}
-          today={today}
-          onDayClick={handleDayClick}
-        />
       ) : (
+        <div
+          key={animKey}
+          className="flex-1 animate-crossfade"
+          style={{
+            transform: `translateY(${touchY}px)`,
+            transition: swiping ? "none" : "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+          }}
+        >
+          {view === "week" ? (
+            <WeekView
+              weekDays={weekDays}
+              entryByDate={entryByDate}
+              today={today}
+              onDayClick={handleDayClick}
+            />
+          ) : (
         <MonthView
           year={monthYear.y}
           month={monthYear.m}
@@ -195,6 +242,8 @@ export default function CalendarPage() {
           today={today}
           onDayClick={handleDayClick}
         />
+      )}
+        </div>
       )}
 
       <TabBar active="calendar" />

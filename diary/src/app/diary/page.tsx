@@ -13,6 +13,7 @@ export default function DiaryPage() {
   const { ready } = useAuth();
   const { entry, loading, addGeneration, switchVersion } = useTodayEntry(ready);
   const [generating, setGenerating] = useState(false);
+  const [streamText, setStreamText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState("");
@@ -32,11 +33,11 @@ export default function DiaryPage() {
     if (!entry || !entry.raw_notes.length) return;
     setGenerating(true);
     setError(null);
+    setStreamText("");
 
     try {
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
-
       if (!token) { setError("未登录，请刷新页面"); return; }
 
       const response = await fetch(
@@ -51,11 +52,73 @@ export default function DiaryPage() {
       if (!response.ok) {
         const err = await response.json();
         setError(err.error ?? "生成失败，请稍后重试");
+        setGenerating(false);
         return;
       }
 
-      const { content, summary } = await response.json();
-      await addGeneration(content, summary);
+      // Consume SSE stream
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let accumulator = "";
+      let tokenCount = 0;
+      let displayQueue: string[] = [];
+      let timer: ReturnType<typeof setTimeout> | null = null;
+
+      const flushNext = () => {
+        if (displayQueue.length === 0) { timer = null; return; }
+        const ch = displayQueue.shift()!;
+        if (ch === "\n") {
+          accumulator += "\n";
+          requestAnimationFrame(() => { setStreamText(accumulator); flushNext(); });
+        } else {
+          accumulator += ch;
+          setStreamText(accumulator);
+          tokenCount++;
+          // Speed up: 40ms → 10ms over first 200 tokens
+          const speed = Math.max(10, 40 - (tokenCount / 200) * 30);
+          timer = setTimeout(flushNext, speed);
+        }
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6).trim();
+            if (data === "[DONE]") continue;
+            try {
+              const { token } = JSON.parse(data);
+              for (const ch of token) {
+                displayQueue.push(ch);
+              }
+              if (!timer) flushNext();
+            } catch { /* skip */ }
+          }
+        }
+      }
+
+      // Wait for display to finish
+      while (displayQueue.length > 0 || timer) {
+        await new Promise((r) => setTimeout(r, 20));
+      }
+
+      // Parse JSON from accumulated content
+      const jsonMatch = accumulator.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        setError("AI 返回格式异常，请重试");
+        setGenerating(false);
+        return;
+      }
+      const { content, summary } = JSON.parse(jsonMatch[0]);
+      await addGeneration(content || accumulator, summary || "");
+      setStreamText("");
     } catch {
       setError("网络错误，请稍后重试");
     } finally {
@@ -107,10 +170,17 @@ export default function DiaryPage() {
         )}
 
         {generating ? (
-          <div className="space-y-3 animate-pulse">
-            <div className="h-3 bg-linen rounded w-3/4" />
-            <div className="h-3 bg-linen rounded w-full" />
-            <div className="h-3 bg-linen rounded w-2/3" />
+          <div className="font-serif text-[0.95rem] leading-[2] text-ink/90">
+            {streamText ? (
+              <ReactMarkdown components={mdComponents}>
+                {streamText}
+              </ReactMarkdown>
+            ) : (
+              <span className="inline-block w-2 h-4 bg-rust/60 animate-pulse rounded-sm align-middle" />
+            )}
+            {streamText && (
+              <span className="inline-block w-2 h-4 bg-rust/60 animate-pulse rounded-sm align-middle ml-0.5" />
+            )}
           </div>
         ) : editing ? (
           /* Edit mode */

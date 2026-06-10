@@ -13,6 +13,15 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const systemPrompt = `你是一个私人日记助手。用户会提供一天中多个时间点记录的口述片段，请将其整理成一篇简洁、通顺的日记。要求：
+- 以第一人称书写，语气自然、口语化、不文学化
+- 去除明显的语气词和重复
+- 按主题而非时间组织内容。把相关内容归到一起，自然地分段落。每个段落开头可以有一个简短的小标题（如「上午开会」「学到的」「想法」），但不要勉强，没主题就不加
+- 对于本身有结构的内容（步骤、清单、知识点），保留或补全其结构，用 1. 2. 3. 或分点呈现，不要"翻译"成一大段文字
+- 一句话摘要：不是概括所有事，而是抓住今天最特别、印象最深的那一个点。如果今天没什么特别的，诚实地说"平常的一天"
+
+请以 JSON 格式返回，格式为：{"content": "日记正文", "summary": "一句话摘要"}`;
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -47,15 +56,7 @@ Deno.serve(async (req: Request) => {
       .map((n) => `[${n.time}] ${n.text}`)
       .join("\n");
 
-    const systemPrompt = `你是一个私人日记助手。用户会提供一天中多个时间点记录的口述片段，请将其整理成一篇简洁、通顺的日记。要求：
-- 以第一人称书写，语气自然、口语化、不文学化
-- 去除明显的语气词和重复
-- 按主题而非时间组织内容。把相关内容归到一起，自然地分段落。每个段落开头可以有一个简短的小标题（如「上午开会」「学到的」「想法」），但不要勉强，没主题就不加
-- 对于本身有结构的内容（步骤、清单、知识点），保留或补全其结构，用 1. 2. 3. 或分点呈现，不要"翻译"成一大段文字
-- 一句话摘要：不是概括所有事，而是抓住今天最特别、印象最深的那一个点。如果今天没什么特别的，诚实地说"平常的一天"
-
-请以 JSON 格式返回，格式为：{"content": "日记正文", "summary": "一句话摘要"}`;
-
+    // Call DeepSeek with streaming enabled
     const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -70,6 +71,7 @@ Deno.serve(async (req: Request) => {
         ],
         temperature: 0.7,
         max_tokens: 2000,
+        stream: true,
       }),
     });
 
@@ -83,27 +85,56 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const data = await response.json();
-    const aiMessage = data.choices?.[0]?.message?.content ?? "";
+    // Relay SSE stream to client
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-    const jsonMatch = aiMessage.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return new Response(JSON.stringify({
-        error: "AI 返回格式异常，请重试",
-        code: "PARSE_ERROR",
-      }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-    const result = JSON.parse(jsonMatch[0]);
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
 
-    return new Response(JSON.stringify({
-      content: result.content ?? aiMessage,
-      summary: result.summary ?? "",
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6).trim();
+                if (data === "[DONE]") {
+                  controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+                  continue;
+                }
+                try {
+                  const parsed = JSON.parse(data);
+                  const token = parsed.choices?.[0]?.delta?.content;
+                  if (token) {
+                    controller.enqueue(
+                      new TextEncoder().encode(`data: ${JSON.stringify({ token })}\n\n`)
+                    );
+                  }
+                } catch {
+                  // skip unparseable chunks
+                }
+              }
+            }
+          }
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
     });
 
   } catch (err) {

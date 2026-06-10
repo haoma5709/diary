@@ -139,12 +139,12 @@ export default function RecordsPage() {
       </div>
 
       {/* Input — WeChat-style auto-expanding textarea */}
-      <div className="fixed-slot bg-surface border-t border-linen pt-2 pb-4 px-5">
-        <div className="flex gap-2 items-end">
+      <div className="fixed-slot bg-surface border-t border-linen pt-2 pb-4 px-[28px]">
+        <div className="flex gap-3 items-end">
           {showExpandBtn && (
             <button
               onClick={() => setExpandMode(true)}
-              className="w-[36px] h-[36px] rounded-lg border border-linen flex items-center justify-center text-ink-muted text-base shrink-0 mb-2 active:bg-linen transition-colors cursor-pointer bg-transparent"
+              className="w-[44px] h-[44px] rounded-xl border border-linen flex items-center justify-center text-ink-muted text-lg shrink-0 active:bg-linen transition-colors cursor-pointer bg-transparent"
               aria-label="全屏输入"
             >
               ⤢
@@ -167,7 +167,7 @@ export default function RecordsPage() {
           <button
             onClick={handleSave}
             disabled={!text.trim() || saving}
-            className="w-[44px] h-[44px] rounded-full bg-rust border-0 text-white text-lg cursor-pointer flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.92] disabled:opacity-30 mb-0.5"
+            className="w-[44px] h-[44px] rounded-full bg-rust border-0 text-white text-lg cursor-pointer flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.92] disabled:opacity-30"
           >
             {saving ? "···" : "↑"}
           </button>

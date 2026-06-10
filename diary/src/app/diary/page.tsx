@@ -197,18 +197,18 @@ export default function DiaryPage() {
 
       {/* Actions */}
       {!editing && (
-        <div className="px-7 pt-5 pb-7 flex flex-col gap-3 flex-shrink-0">
+        <div className="px-7 pt-5 pb-7 flex flex-col items-center gap-4 flex-shrink-0">
           <button
             onClick={handleGenerate}
             disabled={generating || !entry?.raw_notes.length}
-            className="w-full bg-rust text-white border-0 rounded-2xl py-3.5 text-[0.9rem] font-semibold font-sans tracking-wide cursor-pointer transition-all duration-200 active:bg-rust-hover active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
+            className="px-10 py-2.5 bg-rust text-white border-0 rounded-full text-[0.85rem] font-medium font-sans tracking-[0.02em] cursor-pointer transition-all duration-200 active:bg-rust-hover active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
           >
             {generating ? "生成中..." : "生成日记"}
           </button>
           {entry && entry.generations.length > 0 && (
             <button
               onClick={() => setShowVersions(true)}
-              className="w-full text-center text-[0.8rem] font-sans cursor-pointer transition-colors bg-transparent text-ink-muted border-0 py-1 hover:text-ink-light"
+              className="text-center text-[0.78rem] font-sans cursor-pointer transition-colors bg-transparent text-ink-muted border-0 py-0.5 hover:text-ink-light"
             >
               历史版本
             </button>

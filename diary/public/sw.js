@@ -1,11 +1,11 @@
-const CACHE_NAME = "voice-diary-v2";
+const CACHE_NAME = "voice-diary-v3";
 
-// App shell — core pages to cache on install
-const SHELL = ["/", "/diary", "/calendar"];
+// Static assets to cache on install (not HTML — that must stay fresh)
+const STATIC_ASSETS = ["/icon-192.png", "/icon-512.png", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
@@ -20,14 +20,24 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Bypass cache for Supabase API & auth calls
+  // Bypass cache for Supabase API & auth
   if (event.request.url.includes("supabase.co")) {
     return;
   }
 
+  const url = new URL(event.request.url);
+
+  // Network-first for HTML pages — always get latest version
+  if (event.request.mode === "navigate" || url.pathname === "/" || url.pathname.startsWith("/diary") || url.pathname.startsWith("/calendar")) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for static assets (JS, CSS, fonts, images)
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      // Return cached response, update cache from network in background
       const fetched = fetch(event.request).then((resp) => {
         if (resp.ok) {
           const clone = resp.clone();

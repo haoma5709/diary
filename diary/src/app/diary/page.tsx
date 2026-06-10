@@ -56,30 +56,11 @@ export default function DiaryPage() {
         return;
       }
 
-      // Consume SSE stream
+      // Consume SSE stream — accumulate tokens, display with accelerating speed
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let accumulator = "";
-      let tokenCount = 0;
-      let displayQueue: string[] = [];
-      let timer: ReturnType<typeof setTimeout> | null = null;
-
-      const flushNext = () => {
-        if (displayQueue.length === 0) { timer = null; return; }
-        const ch = displayQueue.shift()!;
-        if (ch === "\n") {
-          accumulator += "\n";
-          requestAnimationFrame(() => { setStreamText(accumulator); flushNext(); });
-        } else {
-          accumulator += ch;
-          setStreamText(accumulator);
-          tokenCount++;
-          // Speed up: 40ms → 10ms over first 200 tokens
-          const speed = Math.max(10, 40 - (tokenCount / 200) * 30);
-          timer = setTimeout(flushNext, speed);
-        }
-      };
+      let rawText = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -95,29 +76,39 @@ export default function DiaryPage() {
             if (data === "[DONE]") continue;
             try {
               const { token } = JSON.parse(data);
-              for (const ch of token) {
-                displayQueue.push(ch);
-              }
-              if (!timer) flushNext();
+              rawText += token;
             } catch { /* skip */ }
           }
         }
       }
 
-      // Wait for display to finish
-      while (displayQueue.length > 0 || timer) {
-        await new Promise((r) => setTimeout(r, 20));
-      }
+      // Animate display: start slow, speed up
+      let displayPos = 0;
+      const totalLen = rawText.length;
 
-      // Parse JSON from accumulated content
-      const jsonMatch = accumulator.match(/\{[\s\S]*\}/);
+      await new Promise<void>((resolve) => {
+        const tick = () => {
+          if (displayPos >= totalLen) { resolve(); return; }
+          // Speed: first 200 chars at ~40ms/char, then 10ms/char
+          const progress = displayPos / Math.max(totalLen, 1);
+          const speed = 40 - progress * 30; // 40→10
+          const chunk = Math.max(1, Math.floor((totalLen - displayPos) / (speed * 2)));
+          displayPos = Math.min(totalLen, displayPos + chunk);
+          setStreamText(rawText.slice(0, displayPos));
+          setTimeout(tick, speed);
+        };
+        tick();
+      });
+
+      // Parse JSON from full response
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         setError("AI 返回格式异常，请重试");
         setGenerating(false);
         return;
       }
       const { content, summary } = JSON.parse(jsonMatch[0]);
-      await addGeneration(content || accumulator, summary || "");
+      await addGeneration(content || rawText, summary || "");
       setStreamText("");
     } catch {
       setError("网络错误，请稍后重试");

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DiaryEntry, RawNote, Generation } from "@/lib/types";
+import { withTimeout } from "@/lib/timeout";
 
 const USER_ID = "ff537d73-4858-4130-aa74-e19fbb575cee";
 
@@ -22,12 +23,15 @@ export function useTodayEntry(enabled: boolean = false) {
   const fetchToday = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("diary_entries")
-        .select("*")
-        .eq("user_id", USER_ID)
-        .eq("date", todayStr())
-        .maybeSingle();
+      const { data, error } = await withTimeout(
+        supabase
+          .from("diary_entries")
+          .select("*")
+          .eq("user_id", USER_ID)
+          .eq("date", todayStr())
+          .maybeSingle(),
+        15000
+      );
 
       if (error) console.error("fetch error:", error);
       setEntry(data as DiaryEntry | null);

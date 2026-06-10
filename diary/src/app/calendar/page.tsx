@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import TabBar from "@/components/TabBar";
 import type { DiaryEntry } from "@/lib/types";
 import { mdComponents } from "@/lib/markdown";
+import { withTimeout } from "@/lib/timeout";
 
 const USER_ID = "ff537d73-4858-4130-aa74-e19fbb575cee";
 
@@ -84,16 +85,23 @@ export default function CalendarPage() {
     }
 
     (async () => {
-      const { data } = await supabase
-        .from("diary_entries")
-        .select("*")
-        .eq("user_id", USER_ID)
-        .gte("date", start)
-        .lt("date", end)
-        .order("date", { ascending: true });
-
-      setEntries((data as DiaryEntry[]) ?? []);
-      setLoading(false);
+      try {
+        const { data } = await withTimeout(
+          supabase
+            .from("diary_entries")
+            .select("*")
+            .eq("user_id", USER_ID)
+            .gte("date", start)
+            .lt("date", end)
+            .order("date", { ascending: true }),
+          15000
+        );
+        setEntries((data as DiaryEntry[]) ?? []);
+      } catch (e) {
+        console.error("calendar fetch error:", e);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [ready, monthYear]);
 

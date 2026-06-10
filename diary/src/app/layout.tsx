@@ -23,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://qcqwwthiemkokciitylo.supabase.co" />
+        <link rel="dns-prefetch" href="https://qcqwwthiemkokciitylo.supabase.co" />
         <link rel="stylesheet" href="/fonts/fonts.css" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="theme-color" content="#fbf8f3" />

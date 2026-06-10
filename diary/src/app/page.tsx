@@ -158,7 +158,7 @@ export default function RecordsPage() {
       </div>
 
       {/* Input — minimalist unified baseline */}
-      <div className="fixed-slot bg-surface border-t border-linen py-2 px-[28px]">
+      <div className="fixed-slot bg-surface border-t border-linen pt-0 pb-4 px-[28px]">
         <div className="relative">
           <div className="flex gap-3 items-center">
             {showExpandBtn && (

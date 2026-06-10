@@ -14,7 +14,7 @@ export default function TabBar({ active }: Props) {
   ] as const;
 
   return (
-    <nav className="fixed-slot flex border-t border-linen bg-surface pt-3.5 pb-[calc(env(safe-area-inset-bottom,8px)+10px)]">
+    <nav className="fixed-slot flex border-t border-linen bg-surface pt-2 pb-[calc(env(safe-area-inset-bottom,8px)+10px)]">
       {tabs.map((tab) => (
         <Link
           key={tab.key}

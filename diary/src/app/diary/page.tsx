@@ -166,7 +166,7 @@ export default function DiaryPage() {
             <p className="text-2xl opacity-20 mb-4">—</p>
             <p className="font-serif text-[1.1rem] text-ink mb-1.5">今天还没有记录</p>
             <p className="text-[0.85rem] text-ink-muted leading-relaxed">
-              先去"记录"中说出今天的想法<br />然后回到这里让 AI 为你整理
+成文
             </p>
           </div>
         )}
@@ -178,7 +178,7 @@ export default function DiaryPage() {
           <button
             onClick={handleGenerate}
             disabled={generating || !entry?.raw_notes.length}
-            className="px-10 py-2.5 bg-rust text-white border-0 rounded-full text-[0.85rem] font-medium font-sans tracking-[0.02em] cursor-pointer transition-all duration-200 active:bg-rust-hover active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
+            className="glass-warm px-10 py-2.5 rounded-full text-[0.85rem] font-medium font-sans tracking-[0.02em] cursor-pointer transition-all duration-200 text-rust active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
           >
             {generating ? "生成中..." : "生成日记"}
           </button>

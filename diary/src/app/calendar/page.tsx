@@ -148,16 +148,16 @@ export default function CalendarPage() {
         >
           &lt;
         </button>
-        <div className="flex border border-linen rounded-xl overflow-hidden">
+        <div className="flex gap-1 rounded-xl p-0.5">
           <button
             onClick={() => setView("week")}
-            className={`py-2 px-4 text-[0.8rem] font-sans cursor-pointer transition-all ${view === "week" ? "bg-rust text-white border-rust" : "bg-transparent text-ink-muted border-transparent"}`}
+            className={`py-2 px-4 text-[0.8rem] font-sans cursor-pointer transition-all rounded-[10px] ${view === "week" ? "glass-surface text-rust font-semibold" : "bg-transparent text-ink-muted"}`}
           >
             周
           </button>
           <button
             onClick={() => setView("month")}
-            className={`py-2 px-4 text-[0.8rem] font-sans cursor-pointer transition-all border-l-0 ${view === "month" ? "bg-rust text-white border-rust" : "bg-transparent text-ink-muted border-transparent"}`}
+            className={`py-2 px-4 text-[0.8rem] font-sans cursor-pointer transition-all rounded-[10px] ${view === "month" ? "glass-surface text-rust font-semibold" : "bg-transparent text-ink-muted"}`}
           >
             月
           </button>

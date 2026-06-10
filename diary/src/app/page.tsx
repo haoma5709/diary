@@ -87,7 +87,9 @@ export default function RecordsPage() {
 
         {notes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-ink-muted/50 text-sm gap-4">
-            <img src="/icon-192.png" alt="语音日记" className="w-20 h-20 opacity-30 rounded-[22px]" />
+            <div className="glass-warm w-[88px] h-[88px] rounded-[24px] flex items-center justify-center opacity-70">
+              <img src="/icon-192.png" alt="语音日记" className="w-14 h-14 rounded-[16px]" />
+            </div>
             <p>所学，所思，所行，所想</p>
           </div>
         ) : (
@@ -139,7 +141,7 @@ export default function RecordsPage() {
       </div>
 
       {/* Input — minimalist unified baseline */}
-      <div className="fixed-slot bg-surface border-t border-linen py-2.5 px-[28px]">
+      <div className="fixed-slot bg-surface border-t border-linen py-2 px-[28px]">
         <div className="relative">
           <div className="flex gap-3 items-center">
             {showExpandBtn && (
@@ -168,11 +170,8 @@ export default function RecordsPage() {
             <button
               onClick={handleSave}
               disabled={!text.trim() || saving}
-              className="w-[40px] h-[40px] rounded-full border-[1.5px] flex items-center justify-center text-base shrink-0 transition-all duration-200 active:scale-[0.92] disabled:opacity-20 cursor-pointer bg-transparent"
-              style={{
-                borderColor: text.trim() ? "#c46b4d" : "#d9cfbf",
-                color: text.trim() ? "#c46b4d" : "#b0a392",
-              }}
+              className="glass-warm w-[40px] h-[40px] rounded-full flex items-center justify-center text-base shrink-0 transition-all duration-200 active:scale-[0.92] disabled:opacity-20 cursor-pointer"
+              style={{ color: text.trim() ? "#c46b4d" : "#b0a392" }}
             >
               ↑
             </button>

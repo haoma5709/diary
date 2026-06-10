@@ -82,6 +82,24 @@ export default function DiaryPage() {
         }
       }
 
+      // Helper: strip JSON wrapper to extract just the content value
+      const extractContent = (text: string): string => {
+        const key = '"content"';
+        const ki = text.indexOf(key);
+        if (ki === -1) return "";
+        const colon = text.indexOf(":", ki);
+        if (colon === -1) return "";
+        const open = text.indexOf('"', colon + 1);
+        if (open === -1) return "";
+        let c = text.slice(open + 1);
+        // Strip trailing JSON if present
+        const end = c.lastIndexOf('", "summary"');
+        if (end !== -1) c = c.slice(0, end);
+        else if (c.endsWith('"}')) c = c.slice(0, -2);
+        else if (c.endsWith('"')) c = c.slice(0, -1);
+        return c;
+      };
+
       // Animate display: start slow, speed up
       let displayPos = 0;
       const totalLen = rawText.length;
@@ -89,12 +107,11 @@ export default function DiaryPage() {
       await new Promise<void>((resolve) => {
         const tick = () => {
           if (displayPos >= totalLen) { resolve(); return; }
-          // Speed: first 200 chars at ~40ms/char, then 10ms/char
           const progress = displayPos / Math.max(totalLen, 1);
-          const speed = 40 - progress * 30; // 40→10
+          const speed = 40 - progress * 30;
           const chunk = Math.max(1, Math.floor((totalLen - displayPos) / (speed * 2)));
           displayPos = Math.min(totalLen, displayPos + chunk);
-          setStreamText(rawText.slice(0, displayPos));
+          setStreamText(extractContent(rawText.slice(0, displayPos)));
           setTimeout(tick, speed);
         };
         tick();

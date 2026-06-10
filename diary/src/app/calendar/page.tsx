@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import TabBar from "@/components/TabBar";
 import type { DiaryEntry } from "@/lib/types";
+import { mdComponents } from "@/lib/markdown";
 
 const USER_ID = "ff537d73-4858-4130-aa74-e19fbb575cee";
 
@@ -312,8 +314,8 @@ function DayDetailView({ entry, onBack }: { entry: DiaryEntry | null; onBack: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex items-center gap-3 px-7 py-4 border-b border-linen bg-surface flex-shrink-0">
-        <button onClick={onBack} className="text-sm text-rust font-medium cursor-pointer bg-transparent border-0">&lt; 返回</button>
+      <div className="flex items-center justify-center px-7 py-4 border-b border-linen bg-surface flex-shrink-0 relative">
+        <button onClick={onBack} className="absolute left-7 text-sm text-rust font-medium cursor-pointer bg-transparent border-0">&lt; 返回</button>
         <span className="font-serif text-[1.1rem] font-semibold text-ink">{dateFull}</span>
       </div>
 
@@ -328,8 +330,10 @@ function DayDetailView({ entry, onBack }: { entry: DiaryEntry | null; onBack: ()
         {pinnedGen?.content && (
           <>
             <p className="text-[0.7rem] text-ink-muted tracking-[0.06em] mb-2">日记</p>
-            <div className="font-serif text-[0.9rem] text-ink/90 leading-[1.85] whitespace-pre-wrap mb-5">
-              {pinnedGen.content}
+            <div className="font-serif text-[0.95rem] leading-[2] text-ink/90 mb-5">
+              <ReactMarkdown components={mdComponents}>
+                {pinnedGen.content}
+              </ReactMarkdown>
             </div>
           </>
         )}

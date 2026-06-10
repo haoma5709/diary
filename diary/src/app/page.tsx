@@ -139,7 +139,7 @@ export default function RecordsPage() {
       </div>
 
       {/* Input — minimalist unified baseline */}
-      <div className="fixed-slot bg-surface border-t border-linen pt-3 pb-4 px-[28px]">
+      <div className="fixed-slot bg-surface border-t border-linen py-2.5 px-[28px]">
         <div className="relative">
           <div className="flex gap-3 items-center">
             {showExpandBtn && (
@@ -153,7 +153,7 @@ export default function RecordsPage() {
             )}
             <textarea
               ref={textareaRef}
-              className="flex-1 bg-transparent py-2 text-[0.9rem] text-ink font-sans leading-relaxed outline-none placeholder:text-ink-muted/50 resize-none border-0"
+              className="flex-1 bg-transparent py-1 text-[0.9rem] text-ink font-sans leading-relaxed outline-none placeholder:text-ink-muted/50 resize-none border-0"
               placeholder="说点什么"
               rows={2}
               value={text}

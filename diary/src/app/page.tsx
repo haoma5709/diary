@@ -141,7 +141,7 @@ export default function RecordsPage() {
       {/* Input — minimalist unified baseline */}
       <div className="fixed-slot bg-surface border-t border-linen pt-3 pb-4 px-[28px]">
         <div className="relative">
-          <div className="flex gap-3 items-end">
+          <div className="flex gap-3 items-center">
             {showExpandBtn && (
               <button
                 onClick={() => setExpandMode(true)}
